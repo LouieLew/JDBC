@@ -1,0 +1,82 @@
+package contruller;
+
+import java.io.IOException;
+import java.util.List;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import dao.UserDao;
+import entity.User;
+
+public class UserServlet extends HttpServlet {
+	protected UserDao ud = new UserDao();
+	@Override
+	protected void service(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		
+		String type = req.getParameter("type");
+		
+		if(type == null || type.equals("show")){
+			System.out.println("跳转到显示信息页面");
+			List<User> list = ud.queryAll();
+			req.setAttribute("list", list);
+			req.getRequestDispatcher("view/user/show.jsp").forward(req, resp);
+			
+		}else if(type.equals("toAddPage")){
+			System.out.println("跳转到添加页面");
+			resp.sendRedirect("view/user/add.jsp");
+			
+		}else if(type.equals("add")){
+			System.out.println("执行添加");
+			add(req, resp);
+			
+		}else if(type.equals("delete")){
+			System.out.println("执行删除");
+			int uid = Integer.parseInt(req.getParameter("id"));
+			System.out.println(uid);
+			ud.deleteByUid(uid);
+			resp.sendRedirect("user");
+			
+		}else if(type.equals("toUpdatePage")){
+			System.out.println("跳转到修改页面");
+			//跳转时携带要修改的信息
+			int uid = Integer.parseInt(req.getParameter("id"));
+			User u = ud.queryOne(uid);
+			req.setAttribute("user", u);
+			req.getRequestDispatcher("view/user/update.jsp").forward(req, resp);
+			
+		}else if(type.equals("update")){
+			System.out.println("执行修改");
+			update(req, resp);
+			
+		}
+	}
+	private void update(HttpServletRequest req, HttpServletResponse resp)
+			throws IOException {
+		int uid = Integer.parseInt(req.getParameter("id"));
+		int uage = Integer.parseInt(req.getParameter("age"));
+		String uname = req.getParameter("name");
+		String usex = req.getParameter("sex");
+		User u = new User();
+		u.setUage(uage);
+		u.setUname(uname);
+		u.setUsex(usex);
+		u.setUid(uid);
+		ud.update(u);
+		resp.sendRedirect("user");
+	}
+	private void add(HttpServletRequest req, HttpServletResponse resp)
+			throws IOException {
+		int uage = Integer.parseInt(req.getParameter("age"));
+		String uname = req.getParameter("name");
+		String usex = req.getParameter("sex");
+		
+		User u = new User();
+		u.setUage(uage);
+		u.setUname(uname);
+		u.setUsex(usex);
+		ud.add(u);
+		resp.sendRedirect("user");
+	}
+}
